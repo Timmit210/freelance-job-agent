@@ -35,3 +35,25 @@ class Postfach(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+BEBEE = """
+<a href="https://bebee.com/api/t/c/x0">beBee</a>
+<p>13 neue Stellen</p><p>Hallo Tim,</p>
+<p>Social Influencer gesucht! Promoter (m/w/d)</p><p>Apollon GmbH · Bremen</p><p>3.000 €/Monat</p>
+<a href="https://bebee.com/api/t/c/x1">Stelle ansehen</a>
+<p>Content Creator &amp; Social Media (m/f/d)</p><p>UJAM Music Technology · Bremen</p>
+<a href="https://bebee.com/api/t/c/x2">Stelle ansehen</a>
+<a href="https://bebee.com/api/t/c/x3">Alle Stellen ansehen</a>
+<a href="https://bebee.com/api/t/u/y?action=manage">Benachrichtigungen verwalten</a>
+"""
+
+
+class BeBee(unittest.TestCase):
+    def test_titel_vor_button(self):
+        jobs = jobs_aus_mail(BEBEE, {"name": "BeBee", "link": "bebee"})
+        self.assertEqual([(j.titel, j.firma, j.ort) for j in jobs], [
+            ("Social Influencer gesucht! Promoter (m/w/d)", "Apollon GmbH", "Bremen"),
+            ("Content Creator & Social Media (m/f/d)", "UJAM Music Technology", "Bremen"),
+        ])
+        self.assertEqual(jobs[1].url, "https://bebee.com/api/t/c/x2")
