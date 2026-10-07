@@ -59,6 +59,8 @@ def arbeitsagentur(cfg, heimat):
                 "size": 100,
             }
             daten = json.loads(_get(f"{BA_URL}?{urllib.parse.urlencode(params)}", {"X-API-Key": BA_KEY}))
+            if not daten.get("stellenangebote"):
+                print(f"  Arbeitsagentur '{begriff}'/{angebotsart}: leer, Antwort-Felder: {list(daten)[:8]} {str(daten)[:300]}")
             for s in daten.get("stellenangebote") or []:
                 refnr = s.get("refnr")
                 if not refnr or refnr in jobs:
