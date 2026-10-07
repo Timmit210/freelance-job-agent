@@ -19,7 +19,7 @@ RAUSCHEN = re.compile(
 
 
 # Button-Texte, bei denen der eigentliche Jobtitel vor dem Link steht
-BUTTON = re.compile(r"^(stelle|job|projekt|anzeige)?\s*(ansehen|anzeigen|details|öffnen)$|^mehr erfahren$|^jetzt bewerben$|^view job$|^zum (job|projekt)$", re.I)
+BUTTON = re.compile(r"^(stelle|job|projekt|anzeige)?\s*(ansehen|anzeigen|details|öffnen)$|^mehr erfahren$|^jetzt bewerben$|^view job$|^zum (job|projekt|auftrag)$", re.I)
 
 
 class _Links(HTMLParser):

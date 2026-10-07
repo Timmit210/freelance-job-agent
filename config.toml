@@ -44,7 +44,7 @@ posting = ["posten", "posting", "community", "redaktionsplan", "content-plan", "
 freelance = ["freelance", "freiberuf", "freie mitarbeit", "projektbasis", "auf rechnung", "selbstständig", "selbständig"]
 fest = ["festanstellung", "/monat", "/jahr", "gehalt", "vollzeit", "teilzeit", "unbefristet", "befristet", "werkstudent"]
 remote = ["remote", "homeoffice", "home office", "ortsunabhängig", "fernarbeit"]
-ausschluss = ["praktikum", "promoter", "ausbildung", "minijob", "werkstudent"]
+ausschluss = ["praktikum", "praktikant", "trainee", "promoter", "ausbildung", "minijob", "werkstudent"]
 
 # Job-Benachrichtigungen der Portale im Postfach (gleiche Zugangsdaten wie für den Versand)
 [postfach]
