@@ -1,0 +1,47 @@
+# Einstellungen für Tims Job-Agent.
+# Alles hier darf angepasst werden, ohne den Code anzufassen.
+
+[heimat]
+name = "Bremen"
+lat = 53.0793
+lon = 8.8017
+
+# Entfernungsstufen in km (Luftlinie ab Bremen)
+[entfernung]
+sehr_gut = 60    # Bremen, Oldenburg, Delmenhorst, Bremerhaven ...
+gut = 130        # Hamburg, Hannover, Osnabrück ...
+noch_ok = 180    # darüber (z. B. Ruhrgebiet, Köln) landet es unter "Weiter weg"
+
+[mail]
+betreff_prefix = "🎬 Job-Agent"
+absender_name = "Tims Job-Agent"
+
+# Suchbegriffe für die Jobbörse der Arbeitsagentur
+[arbeitsagentur]
+umkreis_km = 200
+tage = 2
+suchbegriffe = [
+  "Social Media",
+  "Content Creator",
+  "Videograf",
+  "Videoproduktion",
+  "Social Media Manager",
+]
+
+# RSS-Feeds von dasauge
+[dasauge]
+feeds = [
+  { url = "https://dasauge.de/jobs/stellenangebote/freelancer/?rss", art = "freelance" },
+  { url = "https://dasauge.de/jobs/stellenangebote/fest/?rss", art = "fest" },
+]
+
+# Stichwörter für die Bewertung (Kleinschreibung, Teilwörter zählen)
+[stichwoerter]
+thema = ["social media", "content", "creator", "video", "reels", "tiktok", "instagram", "youtube", "filmproduktion", "bewegtbild", "influencer"]
+dreh = ["dreh", "filmen", "videograf", "videograph", "kamera", "camera", "shooting", "aufnahme", "filmmaker"]
+produktion = ["schnitt", "postproduktion", "post-produktion", "editing", "cutter", "videoproduktion", "produktion", "premiere", "davinci", "after effects"]
+posting = ["posten", "posting", "community", "redaktionsplan", "content-plan", "contentplan", "kanalbetreuung", "veröffentlich", "social media management", "betreuung"]
+freelance = ["freelance", "freiberuf", "freie mitarbeit", "projektbasis", "auf rechnung", "selbstständig", "selbständig"]
+fest = ["festanstellung", "vollzeit", "teilzeit", "unbefristet", "befristet", "werkstudent"]
+remote = ["remote", "homeoffice", "home office", "ortsunabhängig", "fernarbeit"]
+ausschluss = ["praktikum", "ausbildung", "minijob", "werkstudent"]

@@ -1,0 +1,37 @@
+name: Job-Agent
+
+on:
+  schedule:
+    - cron: "0 5 * * *"  # 7:00 Uhr Sommerzeit, 6:00 Uhr Winterzeit
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency: job-agent
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Tests
+        run: python -m unittest
+      - name: Jobs suchen und Mail schicken
+        env:
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          MAIL_FROM: ${{ secrets.MAIL_FROM }}
+          MAIL_TO: ${{ secrets.MAIL_TO }}
+        run: python -m agent
+      - name: Gesehene Jobs merken
+        run: |
+          git config user.name "job-agent"
+          git config user.email "job-agent@users.noreply.github.com"
+          git add daten/gesehen.json
+          git diff --cached --quiet || (git commit -m "Gesehene Jobs aktualisiert" && git push)
