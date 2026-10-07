@@ -42,9 +42,9 @@ dreh = ["dreh", "filmen", "videograf", "videograph", "kamera", "camera", "shooti
 produktion = ["schnitt", "postproduktion", "post-produktion", "editing", "cutter", "videoproduktion", "produktion", "premiere", "davinci", "after effects"]
 posting = ["posten", "posting", "community", "redaktionsplan", "content-plan", "contentplan", "kanalbetreuung", "veröffentlich", "social media management", "betreuung"]
 freelance = ["freelance", "freiberuf", "freie mitarbeit", "projektbasis", "auf rechnung", "selbstständig", "selbständig"]
-fest = ["festanstellung", "vollzeit", "teilzeit", "unbefristet", "befristet", "werkstudent"]
+fest = ["festanstellung", "/monat", "/jahr", "gehalt", "vollzeit", "teilzeit", "unbefristet", "befristet", "werkstudent"]
 remote = ["remote", "homeoffice", "home office", "ortsunabhängig", "fernarbeit"]
-ausschluss = ["praktikum", "ausbildung", "minijob", "werkstudent"]
+ausschluss = ["praktikum", "promoter", "ausbildung", "minijob", "werkstudent"]
 
 # Job-Benachrichtigungen der Portale im Postfach (gleiche Zugangsdaten wie für den Versand)
 [postfach]
