@@ -9,6 +9,10 @@ on:
         description: "Nur Postfach-Diagnose ausführen"
         type: boolean
         default: false
+      roh:
+        description: "Diagnose: Rohstruktur der Mails dieses Portals zeigen"
+        type: string
+        default: ""
 
 permissions:
   contents: write
@@ -31,6 +35,7 @@ jobs:
           SMTP_HOST: ${{ secrets.SMTP_HOST }}
           SMTP_USER: ${{ secrets.SMTP_USER }}
           SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          DIAGNOSE_ROH: ${{ inputs.roh }}
         run: python -m agent.diagnose
       - name: Jobs suchen und Mail schicken
         if: ${{ !inputs.diagnose }}

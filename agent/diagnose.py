@@ -36,3 +36,15 @@ with imaplib.IMAP4_SSL(host) as imap:
             for j in jobs_aus_mail(_html(email.message_from_bytes(roh[0][1])), portal)[:15]:
                 b = bewerte(j, cfg)
                 print(f"      -> {j.titel[:70]} | {j.text[:60]} | {b.stufe if b else 'aussortiert'}")
+            if os.environ.get("DIAGNOSE_ROH") and portal["name"] == os.environ["DIAGNOSE_ROH"]:
+                from html.parser import HTMLParser
+                class Dump(HTMLParser):
+                    def handle_starttag(self, tag, attrs):
+                        if tag in ("a", "img"):
+                            a = dict(attrs)
+                            print(f"        <{tag} {(a.get('href') or a.get('alt') or '')[:90]}>")
+                    def handle_data(self, data):
+                        t = " ".join(data.split())
+                        if t:
+                            print("        " + t[:100])
+                Dump().feed(_html(email.message_from_bytes(roh[0][1])))
