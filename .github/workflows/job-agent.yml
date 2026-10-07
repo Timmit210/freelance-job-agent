@@ -3,7 +3,12 @@ name: Job-Agent
 on:
   schedule:
     - cron: "0 5 * * *"  # 7:00 Uhr Sommerzeit, 6:00 Uhr Winterzeit
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      diagnose:
+        description: "Nur Postfach-Diagnose ausführen"
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -20,7 +25,15 @@ jobs:
           python-version: "3.12"
       - name: Tests
         run: python -m unittest
+      - name: Postfach-Diagnose
+        if: ${{ inputs.diagnose }}
+        env:
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+        run: python -m agent.diagnose
       - name: Jobs suchen und Mail schicken
+        if: ${{ !inputs.diagnose }}
         env:
           SMTP_HOST: ${{ secrets.SMTP_HOST }}
           SMTP_PORT: ${{ secrets.SMTP_PORT }}
@@ -30,6 +43,7 @@ jobs:
           MAIL_TO: ${{ secrets.MAIL_TO }}
         run: python -m agent
       - name: Gesehene Jobs merken
+        if: ${{ !inputs.diagnose }}
         run: |
           git config user.name "job-agent"
           git config user.email "job-agent@users.noreply.github.com"
