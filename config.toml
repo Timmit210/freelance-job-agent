@@ -45,3 +45,15 @@ freelance = ["freelance", "freiberuf", "freie mitarbeit", "projektbasis", "auf r
 fest = ["festanstellung", "vollzeit", "teilzeit", "unbefristet", "befristet", "werkstudent"]
 remote = ["remote", "homeoffice", "home office", "ortsunabhängig", "fernarbeit"]
 ausschluss = ["praktikum", "ausbildung", "minijob", "werkstudent"]
+
+# Job-Benachrichtigungen der Portale im Postfach (gleiche Zugangsdaten wie für den Versand)
+[postfach]
+tage = 3
+portale = [
+  { name = "Indeed", absender = "indeed", link = "indeed\\." },
+  { name = "Stepstone", absender = "stepstone", link = "stepstone\\." },
+  { name = "Malt", absender = "malt", link = "malt\\." },
+  { name = "freelancermap", absender = "freelancermap", link = "freelancermap\\." },
+  { name = "Junico", absender = "junico", link = "junico" },
+  { name = "BeBee", absender = "bebee", link = "bebee" },
+]

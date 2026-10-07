@@ -8,28 +8,44 @@ from datetime import date
 from email.message import EmailMessage
 from email.utils import formataddr
 
-from .bewertung import GOLD, REIHENFOLGE
+from .bewertung import FEST, GOLD, GUT, REIHENFOLGE, WEITER
 
-FARBEN = {GOLD: "#b8860b"}
+# (Akzent, Hintergrund, Symbol) pro Kategorie
+STIL = {
+    GOLD: ("#b8860b", "#fff6d6", "🥇"),
+    GUT: ("#1e8e3e", "#e6f4ea", "✅"),
+    FEST: ("#1a73e8", "#e8f0fe", "💼"),
+    WEITER: ("#80868b", "#f1f3f4", "🚗"),
+}
 
 
 def baue_html(jobs):
     e = html.escape
     teile = ['<div style="font-family:-apple-system,Segoe UI,Arial,sans-serif;max-width:640px;color:#222">']
+
+    # Übersicht oben: farbige Kästchen mit Anzahl je Kategorie
+    teile.append('<table role="presentation" style="border-collapse:separate;border-spacing:6px;margin:0 -6px 8px"><tr>')
+    for stufe in REIHENFOLGE:
+        n = sum(j.stufe == stufe for j in jobs)
+        akzent, hg, symbol = STIL[stufe]
+        kurz = stufe.split(" – ")[0]
+        teile.append(f'<td style="background:{hg};border-radius:8px;padding:8px 10px;text-align:center;font-size:13px;color:{akzent}">'
+                     f'<div style="font-size:20px;font-weight:700">{n}</div>{symbol} {e(kurz)}</td>')
+    teile.append('</tr></table>')
+
     for stufe in REIHENFOLGE:
         gruppe = [j for j in jobs if j.stufe == stufe]
         if not gruppe:
             continue
-        farbe = FARBEN.get(stufe, "#444")
-        teile.append(f'<h2 style="color:{farbe};font-size:18px;margin:24px 0 8px">{e(stufe)} ({len(gruppe)})</h2>')
+        akzent, hg, symbol = STIL[stufe]
+        teile.append(f'<h2 style="color:{akzent};font-size:18px;margin:24px 0 8px">{symbol} {e(stufe)} ({len(gruppe)})</h2>')
         for j in gruppe:
             meta = " · ".join(x for x in (j.firma, j.ort, j.quelle) if x)
             teile.append(
-                '<div style="border-left:3px solid %s;padding:6px 12px;margin:0 0 14px">'
-                '<a href="%s" style="font-size:16px;font-weight:600;color:#0b57d0;text-decoration:none">%s</a>'
-                '<div style="font-size:13px;color:#666;margin-top:2px">%s</div>'
-                '<div style="font-size:14px;margin-top:4px">%s</div></div>'
-                % (farbe, e(j.url), e(j.titel), e(meta), e(" · ".join(j.gruende)))
+                f'<div style="background:{hg};border-left:4px solid {akzent};border-radius:6px;padding:10px 12px;margin:0 0 10px">'
+                f'<a href="{e(j.url)}" style="font-size:16px;font-weight:600;color:#0b57d0;text-decoration:none">{e(j.titel)}</a>'
+                f'<div style="font-size:13px;color:#555;margin-top:2px">{e(meta)}</div>'
+                f'<div style="font-size:14px;margin-top:4px">{e(" · ".join(j.gruende))}</div></div>'
             )
     teile.append('<p style="font-size:12px;color:#888;margin-top:32px">Automatisch verschickt von deinem Job-Agenten '
                  '(github.com/Timmit210/freelance-job-agent).</p></div>')

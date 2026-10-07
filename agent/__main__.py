@@ -11,7 +11,7 @@ import tomllib
 import traceback
 from pathlib import Path
 
-from . import quellen
+from . import postfach, quellen
 from .bewertung import REIHENFOLGE, bewerte
 from .mail import baue_html, betreff, sende
 
@@ -24,6 +24,7 @@ def sammle(cfg):
     laeufe = [
         ("Arbeitsagentur", lambda: quellen.arbeitsagentur(cfg["arbeitsagentur"], cfg["heimat"])),
         ("dasauge", lambda: quellen.rss(cfg["dasauge"]["feeds"], "dasauge")),
+        ("Postfach", lambda: postfach.postfach(cfg["postfach"])),
     ]
     for name, lauf in laeufe:
         try:
