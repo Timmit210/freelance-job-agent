@@ -7,6 +7,7 @@ import urllib.parse
 import urllib.request
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass, field
+from datetime import date, timedelta
 
 USER_AGENT = "Mozilla/5.0 (compatible; tims-job-agent/1.0)"
 
@@ -48,6 +49,8 @@ BA_KEY = "jobboerse-jobsuche"  # öffentlicher Schlüssel aus der Doku (jobsuche
 
 def arbeitsagentur(cfg, heimat):
     jobs = {}
+    # Die Schnittstelle filtert nicht zuverlässig nach Datum, darum hier selbst
+    grenze = (date.today() - timedelta(days=cfg["tage"])).isoformat()
     for begriff in cfg["suchbegriffe"]:
         for angebotsart, art in (("2", "freelance"), ("1", "fest")):
             params = {
@@ -59,25 +62,25 @@ def arbeitsagentur(cfg, heimat):
                 "size": 100,
             }
             daten = json.loads(_get(f"{BA_URL}?{urllib.parse.urlencode(params)}", {"X-API-Key": BA_KEY}))
-            if daten.get("ergebnisliste") and not jobs:
-                print("  DEBUG", json.dumps(daten["ergebnisliste"][0], ensure_ascii=False)[:3000])
-            for s in daten.get("stellenangebote") or []:
-                refnr = s.get("refnr")
-                if not refnr or refnr in jobs:
+            for s in daten.get("ergebnisliste") or []:
+                refnr = s.get("referenznummer")
+                seit = (s.get("veroeffentlichungszeitraum") or {}).get("von", "")
+                if not refnr or refnr in jobs or (seit and seit < grenze):
                     continue
-                ort = s.get("arbeitsort") or {}
-                k = ort.get("koordinaten") or {}
+                lok = (s.get("stellenlokationen") or [{}])[0]
+                adresse = lok.get("adresse") or {}
+                berufe = " ".join([s.get("hauptberuf") or ""] + (s.get("alleBerufe") or []))
                 jobs[refnr] = Job(
                     id=f"ba:{refnr}",
                     quelle="Arbeitsagentur",
-                    titel=s.get("titel") or s.get("beruf") or "",
-                    url=s.get("externeUrl") or f"https://www.arbeitsagentur.de/jobsuche/jobdetail/{refnr}",
-                    firma=s.get("arbeitgeber") or "",
-                    ort=ort.get("ort") or "",
-                    koord=(k["lat"], k["lon"]) if "lat" in k and "lon" in k else None,
-                    text=s.get("beruf") or "",
+                    titel=s.get("stellenangebotsTitel") or s.get("hauptberuf") or "",
+                    url=f"https://www.arbeitsagentur.de/jobsuche/jobdetail/{refnr}",
+                    firma=s.get("firma") or "",
+                    ort=adresse.get("ort") or "",
+                    koord=(lok["breite"], lok["laenge"]) if "breite" in lok and "laenge" in lok else None,
+                    text=berufe + (" homeoffice" if s.get("homeofficemoeglich") else ""),
                     art=art,
-                    datum=s.get("aktuelleVeroeffentlichungsdatum") or "",
+                    datum=seit,
                 )
     return list(jobs.values())
 

@@ -19,7 +19,7 @@ absender_name = "Tims Job-Agent"
 # Suchbegriffe für die Jobbörse der Arbeitsagentur
 [arbeitsagentur]
 umkreis_km = 200
-tage = 2
+tage = 3
 suchbegriffe = [
   "Social Media",
   "Content Creator",
@@ -37,7 +37,7 @@ feeds = [
 
 # Stichwörter für die Bewertung (Kleinschreibung, Teilwörter zählen)
 [stichwoerter]
-thema = ["social media", "content", "creator", "video", "reels", "tiktok", "instagram", "youtube", "filmproduktion", "bewegtbild", "influencer"]
+thema = ["social media", "social-media", "content", "creator", "video", "reels", "tiktok", "instagram", "youtube", "filmproduktion", "bewegtbild", "influencer"]
 dreh = ["dreh", "filmen", "videograf", "videograph", "kamera", "camera", "shooting", "aufnahme", "filmmaker"]
 produktion = ["schnitt", "postproduktion", "post-produktion", "editing", "cutter", "videoproduktion", "produktion", "premiere", "davinci", "after effects"]
 posting = ["posten", "posting", "community", "redaktionsplan", "content-plan", "contentplan", "kanalbetreuung", "veröffentlich", "social media management", "betreuung"]
