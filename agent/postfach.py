@@ -103,24 +103,56 @@ def jobs_aus_mail(html_text, portal, muster=None, min_laenge=8):
     return jobs
 
 
-def postfach(cfg):
+def _lies(imap, portal, seit):
+    """Liest alle Alerts eines Portals im gewählten Ordner; gibt (uids, jobs) zurück."""
+    _, daten = imap.uid("SEARCH", None, "SINCE", seit, "FROM", f'"{portal["absender"]}"')
+    uids = daten[0].split()
+    jobs = []
+    for uid in uids:
+        _, roh = imap.uid("FETCH", uid, "(BODY.PEEK[])")
+        msg = email.message_from_bytes(roh[0][1])
+        gefunden = jobs_aus_mail(_html(msg), portal)
+        if not gefunden:
+            print(f"  {portal['name']}: keine Jobs erkannt in Mail „{make_header(decode_header(msg.get('Subject', '')))}“")
+        jobs += gefunden
+    return uids, jobs
+
+
+def postfach(cfg, aufraeumen=True):
+    """Liest die Portal-Alerts aus dem Ordner und dem Posteingang.
+    Mit aufraeumen=True wandern sie danach aus dem Posteingang in den Ordner, damit der Posteingang sauber bleibt."""
     host = os.environ.get("IMAP_HOST") or os.environ["SMTP_HOST"].replace("smtp.", "imap.", 1)
     seit = (date.today() - timedelta(days=cfg["tage"])).strftime("%d-%b-%Y")
+    ordner = f'"{cfg["ordner"]}"'
     jobs = []
     with imaplib.IMAP4_SSL(host) as imap:
         imap.login(os.environ["SMTP_USER"], os.environ["SMTP_PASSWORD"])
-        imap.select("INBOX", readonly=True)
-        for portal in cfg["portale"]:
-            _, daten = imap.search(None, "SINCE", seit, "FROM", f'"{portal["absender"]}"')
-            nummern = daten[0].split()
-            neu = 0
-            for nr in nummern:
-                _, roh = imap.fetch(nr, "(BODY.PEEK[])")
-                msg = email.message_from_bytes(roh[0][1])
-                gefunden = jobs_aus_mail(_html(msg), portal)
-                if not gefunden:
-                    print(f"  {portal['name']}: keine Jobs erkannt in Mail „{make_header(decode_header(msg.get('Subject', '')))}“")
+        if aufraeumen:
+            imap.create(ordner)  # Fehler, wenn es ihn schon gibt – egal
+
+        if imap.select(ordner, readonly=True)[0] == "OK":
+            for portal in cfg["portale"]:
+                uids, gefunden = _lies(imap, portal, seit)
                 jobs += gefunden
-                neu += len(gefunden)
-            print(f"  {portal['name']}: {len(nummern)} Mails, {neu} Jobs")
+                if uids:
+                    print(f"  {portal['name']} ({cfg['ordner']}): {len(uids)} Mails, {len(gefunden)} Jobs")
+
+        imap.select("INBOX", readonly=not aufraeumen)
+        zu_verschieben = []
+        for portal in cfg["portale"]:
+            uids, gefunden = _lies(imap, portal, seit)
+            jobs += gefunden
+            print(f"  {portal['name']} (Posteingang): {len(uids)} Mails, {len(gefunden)} Jobs")
+            # Aufgeräumt werden alle Mails des Portals, auch ältere
+            _, alle = imap.uid("SEARCH", None, "FROM", f'"{portal["absender"]}"')
+            zu_verschieben += alle[0].split()
+        if aufraeumen and zu_verschieben:
+            menge = b",".join(dict.fromkeys(zu_verschieben)).decode()
+            if imap.uid("COPY", menge, ordner)[0] == "OK":
+                imap.uid("STORE", menge, "+FLAGS", "(\\Deleted)")
+                try:
+                    imap.uid("EXPUNGE", menge)  # nur genau diese Mails endgültig aus dem Posteingang
+                except imaplib.IMAP4.error:
+                    pass  # ohne UIDPLUS bleiben sie als gelöscht markiert, die meisten Programme blenden sie aus
+                print(f"  {len(zu_verschieben)} Mails nach „{cfg['ordner']}“ verschoben")
     return jobs

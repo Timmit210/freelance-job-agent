@@ -1,7 +1,8 @@
-"""Einstiegspunkt: python -m agent [--probe]
+"""Einstiegspunkt: python -m agent [--probe | --aufraeumen]
 
 Sammelt neue Jobs, bewertet sie und schickt eine Mail.
 --probe: nichts verschicken, nichts merken, sondern die Mail als vorschau.html speichern.
+--aufraeumen: nur die Portal-Mails aus dem Posteingang in den Job-Alerts-Ordner schieben.
 """
 
 import json
@@ -19,12 +20,12 @@ ROOT = Path(__file__).resolve().parent.parent
 GESEHEN = ROOT / "daten" / "gesehen.json"
 
 
-def sammle(cfg):
+def sammle(cfg, probe=False):
     jobs, fehler = [], []
     laeufe = [
         ("Arbeitsagentur", lambda: quellen.arbeitsagentur(cfg["arbeitsagentur"], cfg["heimat"])),
         ("dasauge", lambda: quellen.rss(cfg["dasauge"]["feeds"], "dasauge")),
-        ("Postfach", lambda: postfach.postfach(cfg["postfach"])),
+        ("Postfach", lambda: postfach.postfach(cfg["postfach"], aufraeumen=not probe)),
     ]
     for name, lauf in laeufe:
         try:
@@ -39,10 +40,14 @@ def sammle(cfg):
 
 def main():
     probe = "--probe" in sys.argv
+    if "--aufraeumen" in sys.argv:
+        cfg = tomllib.loads((ROOT / "config.toml").read_text())
+        postfach.postfach(cfg["postfach"])
+        return
     cfg = tomllib.loads((ROOT / "config.toml").read_text())
     gesehen = set(json.loads(GESEHEN.read_text())) if GESEHEN.exists() else set()
 
-    jobs, fehler = sammle(cfg)
+    jobs, fehler = sammle(cfg, probe)
     neu = [j for j in jobs if j.id not in gesehen]
     treffer = [j for j in (bewerte(j, cfg) for j in neu) if j]
     treffer.sort(key=lambda j: (REIHENFOLGE.index(j.stufe), -j.punkte))

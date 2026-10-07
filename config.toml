@@ -49,6 +49,7 @@ ausschluss = ["praktikum", "praktikant", "trainee", "promoter", "ausbildung", "m
 # Job-Benachrichtigungen der Portale im Postfach (gleiche Zugangsdaten wie für den Versand)
 [postfach]
 tage = 3
+ordner = "Job-Alerts"  # hierhin räumt der Agent gelesene Portal-Mails
 portale = [
   { name = "Indeed", absender = "indeed", link = "indeed\\." },
   { name = "Stepstone", absender = "stepstone", link = "stepstone\\." },

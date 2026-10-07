@@ -2,11 +2,16 @@ name: Job-Agent
 
 on:
   schedule:
-    - cron: "0 5 * * *"  # 7:00 Uhr Sommerzeit, 6:00 Uhr Winterzeit
+    - cron: "0 5 * * *"  # Morgen-Mail: 7:00 Uhr Sommerzeit, 6:00 Uhr Winterzeit
+    - cron: "30 6-20 * * *"  # tagsüber stündlich Portal-Mails aus dem Posteingang räumen
   workflow_dispatch:
     inputs:
       diagnose:
         description: "Nur Postfach-Diagnose ausführen"
+        type: boolean
+        default: false
+      aufraeumen:
+        description: "Nur Posteingang aufräumen"
         type: boolean
         default: false
       roh:
@@ -29,6 +34,13 @@ jobs:
           python-version: "3.12"
       - name: Tests
         run: python -m unittest
+      - name: Posteingang aufräumen
+        if: ${{ github.event.schedule == '30 6-20 * * *' || inputs.aufraeumen }}
+        env:
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+        run: python -m agent --aufraeumen
       - name: Postfach-Diagnose
         if: ${{ inputs.diagnose }}
         env:
@@ -38,7 +50,7 @@ jobs:
           DIAGNOSE_ROH: ${{ inputs.roh }}
         run: python -m agent.diagnose
       - name: Jobs suchen und Mail schicken
-        if: ${{ !inputs.diagnose }}
+        if: ${{ !inputs.diagnose && !inputs.aufraeumen && github.event.schedule != '30 6-20 * * *' }}
         env:
           SMTP_HOST: ${{ secrets.SMTP_HOST }}
           SMTP_PORT: ${{ secrets.SMTP_PORT }}
@@ -48,7 +60,7 @@ jobs:
           MAIL_TO: ${{ secrets.MAIL_TO }}
         run: python -m agent
       - name: Gesehene Jobs merken
-        if: ${{ !inputs.diagnose }}
+        if: ${{ !inputs.diagnose && !inputs.aufraeumen && github.event.schedule != '30 6-20 * * *' }}
         run: |
           git config user.name "job-agent"
           git config user.email "job-agent@users.noreply.github.com"
