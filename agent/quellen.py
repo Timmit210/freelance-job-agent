@@ -42,7 +42,7 @@ def _ohne_html(s):
 
 # --- Jobbörse der Bundesagentur für Arbeit (offizielle, kostenlose Schnittstelle) ---
 
-BA_URL = "https://rest.arbeitsagentur.de/jobboerse/jobsuche-service/pc/v4/jobs"
+BA_URL = "https://rest.arbeitsagentur.de/jobboerse/jobsuche-service/pc/v6/jobs"
 BA_KEY = "jobboerse-jobsuche"  # öffentlicher Schlüssel aus der Doku (jobsuche.api.bund.dev)
 
 

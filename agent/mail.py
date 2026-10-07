@@ -62,7 +62,7 @@ def sende(jobs, cfg):
     msg.add_alternative(baue_html(jobs), subtype="html")
 
     host = os.environ["SMTP_HOST"]
-    port = int(os.environ.get("SMTP_PORT", "465"))
+    port = int(os.environ.get("SMTP_PORT") or "465")
     ctx = ssl.create_default_context()
     if port == 465:
         server = smtplib.SMTP_SSL(host, port, context=ctx, timeout=30)
