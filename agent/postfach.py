@@ -121,12 +121,27 @@ def _lies(imap, portal, seit):
 def postfach(cfg, aufraeumen=True):
     """Liest die Portal-Alerts aus dem Ordner und dem Posteingang.
     Mit aufraeumen=True wandern sie danach aus dem Posteingang in den Ordner, damit der Posteingang sauber bleibt."""
-    host = os.environ.get("IMAP_HOST") or os.environ["SMTP_HOST"].replace("smtp.", "imap.", 1)
     seit = (date.today() - timedelta(days=cfg["tage"])).strftime("%d-%b-%Y")
     ordner = f'"{cfg["ordner"]}"'
     jobs = []
+    if os.environ.get("GMAIL_USER"):
+        # Gmail: ein Filter dort sortiert alle Alerts ins Label, der Agent liest nur dieses Label
+        host, user, passwort = "imap.gmail.com", os.environ["GMAIL_USER"], os.environ["GMAIL_APP_PASSWORD"]
+        nur_ordner = True
+    else:
+        host = os.environ.get("IMAP_HOST") or os.environ["SMTP_HOST"].replace("smtp.", "imap.", 1)
+        user, passwort = os.environ["SMTP_USER"], os.environ["SMTP_PASSWORD"]
+        nur_ordner = False
     with imaplib.IMAP4_SSL(host) as imap:
-        imap.login(os.environ["SMTP_USER"], os.environ["SMTP_PASSWORD"])
+        imap.login(user, passwort)
+        if nur_ordner:
+            if imap.select(ordner, readonly=True)[0] != "OK":
+                raise RuntimeError(f"Label „{cfg['ordner']}“ in Gmail nicht gefunden")
+            for portal in cfg["portale"]:
+                uids, gefunden = _lies(imap, portal, seit)
+                jobs += gefunden
+                print(f"  {portal['name']} (Gmail/{cfg['ordner']}): {len(uids)} Mails, {len(gefunden)} Jobs")
+            return jobs
         if aufraeumen:
             imap.create(ordner)  # Fehler, wenn es ihn schon gibt – egal
 

@@ -35,11 +35,12 @@ jobs:
       - name: Tests
         run: python -m unittest
       - name: Posteingang aufräumen
-        if: ${{ github.event.schedule == '30 6-20 * * *' || inputs.aufraeumen }}
+        if: ${{ (github.event.schedule == '30 6-20 * * *' || inputs.aufraeumen) }}
         env:
           SMTP_HOST: ${{ secrets.SMTP_HOST }}
           SMTP_USER: ${{ secrets.SMTP_USER }}
           SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          GMAIL_USER: ${{ secrets.GMAIL_USER }}
         run: python -m agent --aufraeumen
       - name: Postfach-Diagnose
         if: ${{ inputs.diagnose }}
@@ -48,6 +49,8 @@ jobs:
           SMTP_USER: ${{ secrets.SMTP_USER }}
           SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
           DIAGNOSE_ROH: ${{ inputs.roh }}
+          GMAIL_USER: ${{ secrets.GMAIL_USER }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
         run: python -m agent.diagnose
       - name: Jobs suchen und Mail schicken
         if: ${{ !inputs.diagnose && !inputs.aufraeumen && github.event.schedule != '30 6-20 * * *' }}
@@ -56,6 +59,8 @@ jobs:
           SMTP_PORT: ${{ secrets.SMTP_PORT }}
           SMTP_USER: ${{ secrets.SMTP_USER }}
           SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          GMAIL_USER: ${{ secrets.GMAIL_USER }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
           MAIL_FROM: ${{ secrets.MAIL_FROM }}
           MAIL_TO: ${{ secrets.MAIL_TO }}
         run: python -m agent

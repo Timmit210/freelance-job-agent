@@ -12,13 +12,19 @@ from .bewertung import bewerte
 from .postfach import _html, jobs_aus_mail
 
 cfg = tomllib.loads((Path(__file__).resolve().parent.parent / "config.toml").read_text())
-host = os.environ.get("IMAP_HOST") or os.environ["SMTP_HOST"].replace("smtp.", "imap.", 1)
+if os.environ.get("GMAIL_USER"):
+    host, user, pw = "imap.gmail.com", os.environ["GMAIL_USER"], os.environ["GMAIL_APP_PASSWORD"]
+else:
+    host = os.environ.get("IMAP_HOST") or os.environ["SMTP_HOST"].replace("smtp.", "imap.", 1)
+    user, pw = os.environ["SMTP_USER"], os.environ["SMTP_PASSWORD"]
 with imaplib.IMAP4_SSL(host) as imap:
-    imap.login(os.environ["SMTP_USER"], os.environ["SMTP_PASSWORD"])
+    imap.login(user, pw)
     _, ordner = imap.list()
     for zeile in ordner:
         name = re.search(rb'"([^"]*)"$|(\S+)$', zeile)
         name = (name.group(1) or name.group(2)).decode()
+        if os.environ.get("GMAIL_USER") and name != cfg["postfach"]["ordner"]:
+            continue  # in Gmail nur das Job-Label anschauen, nicht die private Post
         if imap.select(f'"{name}"', readonly=True)[0] != "OK":
             continue
         for portal in cfg["postfach"]["portale"]:

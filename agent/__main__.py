@@ -41,6 +41,8 @@ def sammle(cfg, probe=False):
 def main():
     probe = "--probe" in sys.argv
     if "--aufraeumen" in sys.argv:
+        if os.environ.get("GMAIL_USER"):
+            return  # in Gmail sortiert der Filter, hier gibt es nichts zu räumen
         cfg = tomllib.loads((ROOT / "config.toml").read_text())
         postfach.postfach(cfg["postfach"])
         return
