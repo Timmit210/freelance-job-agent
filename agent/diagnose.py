@@ -8,6 +8,9 @@ import tomllib
 from email.header import decode_header, make_header
 from pathlib import Path
 
+from .bewertung import bewerte
+from .postfach import _html, jobs_aus_mail
+
 cfg = tomllib.loads((Path(__file__).resolve().parent.parent / "config.toml").read_text())
 host = os.environ.get("IMAP_HOST") or os.environ["SMTP_HOST"].replace("smtp.", "imap.", 1)
 with imaplib.IMAP4_SSL(host) as imap:
@@ -28,3 +31,8 @@ with imaplib.IMAP4_SSL(host) as imap:
                 _, roh = imap.fetch(n, "(BODY.PEEK[HEADER.FIELDS (FROM DATE SUBJECT)])")
                 h = email.message_from_bytes(roh[0][1])
                 print("   ", h["Date"], "|", make_header(decode_header(h["From"] or "")), "|", str(make_header(decode_header(h["Subject"] or "")))[:80])
+            # Was erkennt der Agent in der neuesten Mail?
+            _, roh = imap.fetch(nr[-1], "(BODY.PEEK[])")
+            for j in jobs_aus_mail(_html(email.message_from_bytes(roh[0][1])), portal)[:15]:
+                b = bewerte(j, cfg)
+                print(f"      -> {j.titel[:70]} | {j.text[:60]} | {b.stufe if b else 'aussortiert'}")
